@@ -7,12 +7,13 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
+from kivy.uix.image import Image
 
 
 class IrisMobileApp(App):
 
     def build(self):
-        # --- Load model ONCE (important for performance) ---
+        # --- Load model ONCE ---
         model_path = os.path.join(os.getcwd(), 'model_rf.pkl')
         self.model = joblib.load(model_path)
 
@@ -38,15 +39,19 @@ class IrisMobileApp(App):
         btn.bind(on_press=self.do_prediction)
         self.layout.add_widget(btn)
 
-        # Result
+        # Result Label
         self.result_lbl = Label(text="Result: Waiting...", font_size=20)
         self.layout.add_widget(self.result_lbl)
+
+        # Image Display
+        self.image = Image(source='', size_hint=(1, 1))
+        self.layout.add_widget(self.image)
 
         return self.layout
 
     def do_prediction(self, instance):
         try:
-            # --- Input validation ---
+            # --- Input ---
             sl = float(self.sl.text)
             sw = float(self.sw.text)
             pl = float(self.pl.text)
@@ -59,6 +64,16 @@ class IrisMobileApp(App):
 
             names = ["Setosa", "Versicolor", "Virginica"]
             self.result_lbl.text = f"Result: {names[res]}"
+
+            # --- Image mapping ---
+            image_map = {
+                0: "assets/setosa.jpg",
+                1: "assets/versicolor.jpg",
+                2: "assets/virginica.jpg"
+            }
+
+            self.image.source = image_map.get(res, "")
+            self.image.reload()
 
         except ValueError:
             self.result_lbl.text = "⚠️ Please enter all values correctly"
